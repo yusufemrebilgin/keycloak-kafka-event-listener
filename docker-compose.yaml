@@ -1,0 +1,65 @@
+services:
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.1
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      SPI_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      SPI_KAFKA_KEY_SERIALIZER: ${KAFKA_KEY_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
+      SPI_KAFKA_VALUE_SERIALIZER: ${KAFKA_VALUE_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
+    volumes:
+      - ./target/keycloak-kafka-event-listener.jar:/opt/keycloak/providers/keycloak-kafka-event-listener.jar
+    command:
+      - start-dev
+    networks:
+      - keycloak-net
+
+  kafka:
+    image: docker.io/apache/kafka:4.0.1
+    container_name: kafka
+    ports:
+      - "29094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://localhost:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - keycloak-net
+
+  kafka-ui:
+    image: docker.io/provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8081:8080"
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=disabled
+    networks:
+      - keycloak-net
+
+volumes:
+  kafka-data:
+
+networks:
+  keycloak-net:
+    driver: bridge
