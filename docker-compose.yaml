@@ -14,7 +14,7 @@ services:
       SPI_KAFKA_KEY_SERIALIZER: ${KAFKA_KEY_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
       SPI_KAFKA_VALUE_SERIALIZER: ${KAFKA_VALUE_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
     volumes:
-      - ./target/keycloak-kafka-event-listener.jar:/opt/keycloak/providers/keycloak-kafka-event-listener.jar
+      - ./target/keycloak-kafka-event-listener-${JAR_VERSION}.jar:/opt/keycloak/providers/keycloak-kafka-event-listener.jar
     command:
       - start-dev
     networks:

@@ -81,7 +81,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.artifactId}</finalName>
+                            <finalName>${project.artifactId}-${project.version}</finalName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <minimizeJar>false</minimizeJar>
