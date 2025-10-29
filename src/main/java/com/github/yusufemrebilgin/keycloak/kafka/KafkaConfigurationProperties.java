@@ -11,7 +11,8 @@ final class KafkaConfigurationProperties extends Properties {
     private static final String KAFKA_ENV_VARIABLE_PREFIX = "SPI_KAFKA_";
 
     private KafkaConfigurationProperties() {
-        super(new DefaultKafkaProperties());
+        super();
+        this.putAll(new DefaultKafkaProperties());
     }
 
     public static KafkaConfigurationProperties loadFromEnv() {
