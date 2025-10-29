@@ -14,21 +14,32 @@ public class KafkaEventListenerProviderFactory implements EventListenerProviderF
 
     private static final String KAFKA_LISTENER_PROVIDER_ID = "kafka-event-listener";
 
+    private boolean kafkaAvailable;
     private KafkaProducer<String, String> producer;
     private KafkaConfigurationProperties kafkaConfigurationProperties;
 
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
+        if (!kafkaAvailable) {
+            return new NoOpEventListenerProvider();
+        }
         return new KafkaEventListenerProvider(kafkaConfigurationProperties.getTopicPrefix(), producer);
     }
 
     @Override
     public void init(Config.Scope scope) {
         logger.info("Initializing [" + KafkaEventListenerProvider.class.getSimpleName() + "]");
+        String kafkaEnabled = System.getenv("SPI_KAFKA_ENABLED");
+        if (kafkaEnabled == null || kafkaEnabled.equalsIgnoreCase("false")) {
+            logger.info("Kafka event listener is disabled; skipping initialization...");
+            return;
+        }
+
         try {
             kafkaConfigurationProperties = KafkaConfigurationProperties.loadFromEnv();
             producer = new KafkaProducer<>(kafkaConfigurationProperties);
             logger.info("Kafka producer initialized successfully");
+            kafkaAvailable = true;
         } catch (Exception ex) {
             logger.error("Failed to initialize [" + KafkaEventListenerProvider.class.getSimpleName() + "]");
             throw new RuntimeException(ex);
