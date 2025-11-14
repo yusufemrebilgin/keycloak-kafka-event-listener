@@ -30,7 +30,6 @@ jobs:
         id: version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          echo "Extracted Version=${VERSION}"
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
