@@ -1,7 +1,7 @@
 services:
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4.1
+    image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
     ports:
       - "8080:8080"
@@ -10,9 +10,15 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      SPI_KAFKA_ENABLED: ${SPI_KAFKA_ENABLED:-true}
       SPI_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
       SPI_KAFKA_KEY_SERIALIZER: ${KAFKA_KEY_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
       SPI_KAFKA_VALUE_SERIALIZER: ${KAFKA_VALUE_SERIALIZER:-org.apache.kafka.common.serialization.StringSerializer}
+      QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA__LEVEL: WARN
+      QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA_COMMON_CONFIG__LEVEL: WARN
+      QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA_COMMON_METRICS__LEVEL: WARN
+      QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA_COMMON_TELEMETRY__LEVEL: WARN
+      QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA_CLIENTS__LEVEL: WARN
     volumes:
       - ./target/keycloak-kafka-event-listener-${JAR_VERSION}.jar:/opt/keycloak/providers/keycloak-kafka-event-listener.jar
     command:
