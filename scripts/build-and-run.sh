@@ -13,7 +13,7 @@ if [[ -z "${SPI_JAR}" ]]; then
   exit 1
 fi
 
-SPI_JAR_VERSION=$(basename "${SPI_JAR}" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+(-SNAPSHOT)?)\.jar/\1/')
+SPI_JAR_VERSION=$(basename "${SPI_JAR}" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?)\.jar/\1/')
 
 echo "Built Keycloak provider [version=${SPI_JAR_VERSION}] for Kafka"
 JAR_VERSION="${SPI_JAR_VERSION}" docker compose up -d
