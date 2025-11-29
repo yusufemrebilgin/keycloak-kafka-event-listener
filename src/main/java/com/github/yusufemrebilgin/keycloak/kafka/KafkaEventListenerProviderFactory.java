@@ -8,6 +8,8 @@ import org.keycloak.events.EventListenerProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
+import java.util.Set;
+
 public class KafkaEventListenerProviderFactory implements EventListenerProviderFactory {
 
     private static final Logger logger = Logger.getLogger(KafkaEventListenerProviderFactory.class);
@@ -17,13 +19,15 @@ public class KafkaEventListenerProviderFactory implements EventListenerProviderF
     private boolean kafkaAvailable;
     private KafkaProducer<String, String> producer;
     private KafkaConfigurationProperties kafkaConfigurationProperties;
+    private EventFilter eventFilter;
 
     @Override
     public EventListenerProvider create(KeycloakSession keycloakSession) {
         if (!kafkaAvailable) {
             return new NoOpEventListenerProvider();
         }
-        return new KafkaEventListenerProvider(kafkaConfigurationProperties.getTopicPrefix(), producer);
+        String topicPrefix = kafkaConfigurationProperties.getTopicPrefix();
+        return new KafkaEventListenerProvider(topicPrefix, producer, eventFilter);
     }
 
     @Override
@@ -38,7 +42,19 @@ public class KafkaEventListenerProviderFactory implements EventListenerProviderF
         try {
             kafkaConfigurationProperties = KafkaConfigurationProperties.loadFromEnv();
             producer = new KafkaProducer<>(kafkaConfigurationProperties);
+            Set<String> includedEventTypes = kafkaConfigurationProperties.getIncludedEventTypes();
+            Set<String> includedOperationTypes = kafkaConfigurationProperties.getIncludedOperationTypes();
+            eventFilter = new EventFilter(includedEventTypes, includedOperationTypes);
+
             logger.info("Kafka producer initialized successfully");
+            if (!includedEventTypes.isEmpty() && !includedOperationTypes.isEmpty()) {
+                logger.infof(
+                        "Event filtering initialized - [User Events: %d, Admin Operations: %d]",
+                        includedEventTypes.size(),
+                        includedOperationTypes.size()
+                );
+            }
+
             kafkaAvailable = true;
         } catch (Exception ex) {
             logger.error("Failed to initialize [" + KafkaEventListenerProvider.class.getSimpleName() + "]");

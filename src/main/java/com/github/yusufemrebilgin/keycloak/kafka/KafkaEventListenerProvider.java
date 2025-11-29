@@ -18,14 +18,25 @@ public class KafkaEventListenerProvider implements EventListenerProvider {
 
     private final String topicPrefix;
     private final KafkaProducer<String, String> producer;
+    private final EventFilter eventFilter;
 
-    public KafkaEventListenerProvider(String topicPrefix, KafkaProducer<String, String> producer) {
+    public KafkaEventListenerProvider(
+            String topicPrefix,
+            KafkaProducer<String, String> producer,
+            EventFilter eventFilter
+    ) {
         this.topicPrefix = topicPrefix;
         this.producer = producer;
+        this.eventFilter = eventFilter;
     }
 
     @Override
     public void onEvent(Event event) {
+        if (!eventFilter.isEventIncluded(event.getType())) {
+            logger.debugf("Event filtered out: %s", event.getType());
+            return;
+        }
+
         try {
             String eventAsJson = mapper.writeValueAsString(event);
             String topic = topicPrefix + ".user." + event.getType().name().toLowerCase();
@@ -39,6 +50,11 @@ public class KafkaEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(AdminEvent event, boolean includeRepresentation) {
+        if (!eventFilter.isOperationIncluded(event.getOperationType())) {
+            logger.debugf("Admin event filtered out: %s", event.getOperationType());
+            return;
+        }
+
         try {
             String eventAsJson = mapper.writeValueAsString(event);
             String topic = topicPrefix + ".admin." + event.getOperationType().name().toLowerCase();
