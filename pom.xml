@@ -20,7 +20,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kafka.version>4.1.0</kafka.version>
-        <keycloak.version>26.4.2</keycloak.version>
+        <keycloak.version>26.4.6</keycloak.version>
         <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
     </properties>
