@@ -2,10 +2,12 @@
 
 set -e
 
-command -v mvn &>/dev/null || { echo "Maven is not installed" >&2; exit 1; }
-command -v docker &>/dev/null || { echo "Docker is not installed" >&2; exit 1; }
+if ! command -v docker &>/dev/null; then
+  echo "Docker is not installed" >&2
+  exit 1
+fi
 
-mvn clean package -DskipTests -V
+./mvnw clean package -DskipTests -V
 
 SPI_JAR=$(find target -maxdepth 1 -type f -name "*.jar" -not -name "original-*.jar" | head -1)
 if [[ -z "${SPI_JAR}" ]]; then
