@@ -1,7 +1,11 @@
 services:
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    build:
+      context: .
+      args:
+        JAR_VERSION: ${JAR_VERSION}
+    image: keycloak-with-kafka-spi
     container_name: keycloak
     ports:
       - "8080:8080"
@@ -23,10 +27,6 @@ services:
       QUARKUS_LOG_CATEGORY__ORG_APACHE_KAFKA_CLIENTS__LEVEL: WARN
       # To enable debug log level:
       # QUARKUS_LOG_CATEGORY__COM_GITHUB_YUSUFEMREBILGIN__LEVEL: DEBUG
-    volumes:
-      - ./target/keycloak-kafka-event-listener-${JAR_VERSION}.jar:/opt/keycloak/providers/keycloak-kafka-event-listener.jar
-    command:
-      - start-dev
     networks:
       - keycloak-net
 
