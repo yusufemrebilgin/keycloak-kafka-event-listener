@@ -83,7 +83,7 @@ docker compose up -d
 
 ### Option 3: Manual build and run
 
-Build the SPI JAR with Maven wrapper and then pass the version to Docker Compose:
+Build the SPI JAR with Maven wrapper and then start Docker Compose:
 
 ```bash
 ./mvnw clean package
@@ -115,7 +115,7 @@ After activation, you can monitor the published events using Kafka UI
 at [http://localhost:8081](http://localhost:8081) or via the Kafka CLI:
 
 ```bash
-docker exec -it kafka kafka-console-consumer.sh \
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server kafka:9092 \
   --topic keycloak.events.user.login \
   --from-beginning
