@@ -5,7 +5,7 @@
 
     <groupId>com.github.yusufemrebilgin</groupId>
     <artifactId>keycloak-kafka-event-listener</artifactId>
-    <version>1.0.0-rc1</version>
+    <version>1.0.0</version>
 
     <name>Keycloak Kafka Event Listener</name>
     <description>
