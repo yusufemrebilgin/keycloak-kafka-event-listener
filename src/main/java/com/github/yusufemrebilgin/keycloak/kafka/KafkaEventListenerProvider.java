@@ -8,6 +8,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.AuthDetails;
 
 import java.util.Optional;
 
@@ -58,7 +59,11 @@ public class KafkaEventListenerProvider implements EventListenerProvider {
         try {
             String eventAsJson = mapper.writeValueAsString(event);
             String topic = topicPrefix + ".admin." + event.getOperationType().name().toLowerCase();
-            String key = Optional.ofNullable(extractUserIdFromPath(event.getResourcePath())).orElse(event.getRealmId());
+
+            String key = Optional.ofNullable(event.getResourceId())
+                    .or(() -> Optional.ofNullable(event.getAuthDetails()).map(AuthDetails::getUserId))
+                    .orElse(event.getRealmId());
+
             ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, key, eventAsJson);
             sendAdminEventToKafka(event, producerRecord);
         } catch (JsonProcessingException ex) {
@@ -101,18 +106,6 @@ public class KafkaEventListenerProvider implements EventListenerProvider {
                 );
             }
         });
-    }
-
-    private String extractUserIdFromPath(String resourcePath) {
-        if (resourcePath != null && resourcePath.contains("users/")) {
-            String[] parts = resourcePath.split("users/");
-            if (parts.length > 1) {
-                String userPart = parts[1];
-                int slashIndex = userPart.indexOf('/');
-                return slashIndex > 0 ? userPart.substring(0, slashIndex) : userPart;
-            }
-        }
-        return null;
     }
 
 }
